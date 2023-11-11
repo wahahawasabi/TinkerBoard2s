@@ -45,13 +45,27 @@ sudo blkid
     2. note: `debworkspace` is a folder you'll have to create. eg: `mkdir ~/debworkspace`
 5. Bootstrap Process:
    ```shell
-   sudo debootstrap --arch arm64 --foreign jammy ~/debworkspace/  # foreign is when you are doing the bootstrap from a different architecture machine
+   sudo debootstrap \
+   --arch arm64 \
+   --include=vim,ssh,dialog,perl,ifupdown,net-tools,ethtool,udev,wireless-tools,iputils-ping,resolvconf,curl,apt-utils,wpasupplicant,bsdmainutils \
+   --components=main,restricted,universe,multiverse \
+   --variant=minbase \
+   --foreign \
+   jammy \
+   ~/debworkspace/ \
+   http://sg.ports.ubuntu.com/   # foreign is when you are doing the bootstrap from a different architecture machine
    sudo cp /usr/bin/qemu-aarch64-static ~/debworkspace/usr/bin/  # this is required to virtualize this installation in the next step.
    sudo chroot ~/debworkspace /usr/bin/qemu-aarch64-static /bin/bash -i  # enter into this installation as a root user
    /debootstrap/debootstrap --second-stage  # this is only available / needed when --foreign is used (takes about 5-7 minutes)
    
+   
+      
+   
+   
+   echo 'root:@11Junjie' | chpasswd # change user pi password to newpassword
+   
    # mandatory steps
-   apt-get install vim openssh-server
+   # apt-get install vim openssh-server
    passwd # set password for root user
    vim /etc/hostname 
    # modify desktop to new hostname
@@ -69,7 +83,7 @@ sudo blkid
    systemctl enable serial-getty@ttyS0.service
    
    # update locales
-   apt-get install dialog perl  # We need those installed first to correct some error messages about locale: If locale-gen command is missing, apt-get install locales first.
+   #   apt-get install dialog perl  # We need those installed first to correct some error messages about locale: If locale-gen command is missing, apt-get install locales first.
   
    # might have to add this at final steps 
    vim /etc/network/interfaces
@@ -89,11 +103,10 @@ sudo blkid
    ###############################
    vim /etc/apt/sources.list  # Add the below sources in instead of the existing. 
    deb http://sg.ports.ubuntu.com/ jammy main restricted universe multiverse
-   # deb-src http://sg.ports.ubuntu.com/ jammy main restricted universe multiverse
    deb http://sg.ports.ubuntu.com/ jammy-updates main restricted universe multiverse
-   # deb-src http://sg.ports.ubuntu.com/ jammy-updates main restricted universe multiverse
+   deb http://sg.ports.ubuntu.com/ jammy-security main restricted universe multiverse
    
-   apt-get install ifupdown net-tools ethtool udev wireless-tools iputils-ping resolvconf wget apt-utils wpasupplicant bsdmainutils # good tools to have
+   # apt-get install ifupdown net-tools ethtool udev wireless-tools iputils-ping resolvconf curl apt-utils wpasupplicant bsdmainutils # good tools to have
 
    ##########################
    # NOT MANDATORY BUT USEFUL
