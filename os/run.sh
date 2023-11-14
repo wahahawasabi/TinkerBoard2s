@@ -16,7 +16,7 @@ sudo debootstrap \
    --foreign \
    jammy \
    ~/debworkspace/ \
-   http://sg.ports.ubuntu.com/;
+   http://ports.ubuntu.com/ubuntu-ports
 
 # this is required to virtualize this installation in the next step.
 sudo cp /usr/bin/qemu-aarch64-static ~/debworkspace/usr/bin/

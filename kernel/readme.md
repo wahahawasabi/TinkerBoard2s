@@ -170,6 +170,9 @@ Terms:
    make ARCH=arm64 CROSS_COMPILE=/home/tinkeros/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu- rk3399-tinker_board_2.img -j16
    # During this step, it MIGHT ask you a bunch of questions where you need to select n/y/?. Have to complete them to finish the build. 
    # This happens because sometimes, there are some defconfig that was not included but the kernel requires it. So it'll prompt you for it.
+   
+   make modules_install INSTALL_MOD_PATH=/home/tinkeros/kernel/MODULES/
+   tar czf name_of_archive_file.tar.gz name_of_directory_to_tar
     ```
 
 5. If no errors, `boot.img`, `kernel.img`, `one-other-image.img` will be created in the directory (`/home/tinkeros/`).

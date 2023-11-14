@@ -20,7 +20,7 @@ RUN apt-get update && apt-get upgrade -y && \
     tar -xvf /home/tinkeros/gcc-linaro-"$gccTarFile"-x86_64_aarch64-linux-gnu.tar.xz --directory /home/tinkeros/ &&\
     rm /home/tinkeros/gcc-linaro-"$gccTarFile"-x86_64_aarch64-linux-gnu.tar.xz &&\
     # git clone https://github.com/TinkerBoard2/kernel.git /home/tinkeros/kernel/ --progress \
-    git clone https://github.com/TinkerBoard/rockchip-linux-kernel.git /home/tinkeros/kernel/ --progress
+    git clone https://github.com/TinkerBoard-Linux/rockchip-linux-kernel.git /home/tinkeros/kernel/ --progress
 
 # adding gcc to path
 ENV PATH="${PATH}:/home/tinkeros/gcc-linaro-$gccVersion-x86_64_aarch64-linux-gnu/bin"
