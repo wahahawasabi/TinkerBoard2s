@@ -14,7 +14,7 @@ ARG kernel419="https://github.com/TinkerBoard2/kernel.git"
 
 RUN apt-get update && apt-get upgrade -y && \
     # Install required libs
-    apt-get install -y ca-certificates procps curl vim xz-utils git wget \
+    apt-get install -y ca-certificates procps curl vim xz-utils git wget kmod \
     bison flex make bc build-essential libncurses-dev libssl-dev libelf-dev liblz4-tool \
     python-is-python3 && \
     # get the gcc  \

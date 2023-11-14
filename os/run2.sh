@@ -26,9 +26,9 @@ cat <<EOF >> /etc/fstab
 EOF
 
 # Username and Password variables
-USERNAME=jakew
-PASSWORD=11junjie
-ROOTPASS=@11Junjie
+USERNAME=linaro
+PASSWORD=linaro
+ROOTPASS=11linaro
 HOSTNAME=tk0
 
 hostname $HOSTNAME  # change hostname
