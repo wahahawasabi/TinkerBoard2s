@@ -1,13 +1,16 @@
 FROM ubuntu:latest
 
 # Example: web folder = 6.3-2017.05 , tar file = 6.3.1-2017.05
-ARG gccVersion=6.3
-ARG gccSubVersion=1
-ARG gccYear=2017
-ARG gccBuild=05
+ARG gccVersion=7.5
+ARG gccSubVersion=0
+ARG gccYear=2019
+ARG gccBuild=12
 
 ARG gccFolder="$gccVersion-$gccYear.$gccBuild"
 ARG gccTarFile="$gccVersion.$gccSubVersion-$gccYear.$gccBuild"
+
+ARG kernel510="https://github.com/TinkerBoard-Linux/rockchip-linux-kernel.git"
+ARG kernel419="https://github.com/TinkerBoard2/kernel.git"
 
 RUN apt-get update && apt-get upgrade -y && \
     # Install required libs
@@ -19,8 +22,7 @@ RUN apt-get update && apt-get upgrade -y && \
     # Setup gcc
     tar -xvf /home/tinkeros/gcc-linaro-"$gccTarFile"-x86_64_aarch64-linux-gnu.tar.xz --directory /home/tinkeros/ &&\
     rm /home/tinkeros/gcc-linaro-"$gccTarFile"-x86_64_aarch64-linux-gnu.tar.xz &&\
-    # git clone https://github.com/TinkerBoard2/kernel.git /home/tinkeros/kernel/ --progress \
-    git clone https://github.com/TinkerBoard-Linux/rockchip-linux-kernel.git /home/tinkeros/kernel/ --progress
+    git clone $kernel510 /home/tinkeros/kernel/ --progress
 
 # adding gcc to path
 ENV PATH="${PATH}:/home/tinkeros/gcc-linaro-$gccVersion-x86_64_aarch64-linux-gnu/bin"
