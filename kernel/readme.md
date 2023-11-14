@@ -39,7 +39,7 @@ Terms:
       - make changes: `# CONFIG_SECURITY is not set` -> `CONFIG_SECURITY=y`
          - Take a moment to review these kernel configs before adding them:
          - Add your specific configs in the `tinker_board_2_defconfig` file. Also be sure to google that the configs are able to work in `arm64` architecture.          
-           ```lombok.config
+           ```
            # IPRoute Settings
            CONFIG_SCSI_NETLINK=y
            CONFIG_NET_SCHED=y
