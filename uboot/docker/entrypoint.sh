@@ -12,20 +12,5 @@ else
   echo "Compile failed."
 fi
 
-
-
-
-
-# extract the uboot that was build
-sudo dd if=u-boot.img of=/dev/mmcblk1p1 status=progress && sync
-
-
-
-# The u-boot image must be copied to the beginning of the device,
-# skip 64 blocks for the location of the loader. This should be done in the tinkerimage.sh script
-
-dd if=platform-asus/tinkerboard/u-boot/u-boot.img of=${LOOP_DEV} seek=64 conv=notrunc
-
-
 # References:
 # https://tinker-board.asus.com/forum/index.php?/topic/15474-urgentdebian-11-3011tinkerboard-2s-tinkerboard-wont-boot-when-fiq_debuggeroff-and-without-wifibt-card/&tab=comments#comment-17010
