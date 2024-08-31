@@ -28,10 +28,10 @@ cd uboot
 # build uboot and all required images.
 ./make.sh tinker_board_2 CROSS_COMPILE=aarch64-linux-gnu-
 ```
-This will generate trust.img, uboot.img, rk3399_loader_v1.30.128.bin, u-boot.dtb files. 
+This will generate `trust.img`, `uboot.img`, `rk3399_loader_v1.30.128.bin`, `u-boot.dtb` files. 
 
 `uboot.img` and `trust.img` are both used in the boot process as secondary loader. Next we will boot the primary loader `idbloader.img` 
-with the files generated from uboot.
+with the files generated from uboot. `rk3399_loader_v1.30.128.bin` is mainly used for booting if you are using the `rkdevtool` which is not covered in this tutorial.
 
 **IMPORTANT: Remember to make changes to your `rootfs` partition number before building uboot. Else it'll not be able to boot into rootfs** 
 
@@ -89,7 +89,7 @@ tar czf name_of_archive_file.tar.gz name_of_directory_to_tar
 
 If  no errors, `boot.img`, `kernel.img`, `one-other-image.img` will be created in the directory.
 
-# Extracting it out from docker to host computer
+# Extracting it out from docker container to host computer
 Within your host pc directory, you can run the below code to extract the required images:
 ```shell
 docker cp <container_name>:/home/tk/kernel/boot.img .
