@@ -92,36 +92,31 @@ If  no errors, `boot.img`, `kernel.img`, `one-other-image.img` will be created i
 # Extracting it out from docker container to host computer
 Within your host pc directory, you can run the below code to extract the required images:
 ```shell
-docker cp <container_name>:/home/tk/kernel/boot.img .
+docker cp <container_name>:/home/tk/uboot/idbloader.img . 
 docker cp <container_name>:/home/tk/uboot/uboot.img . 
 docker cp <container_name>:/home/tk/uboot/trust.img . 
-docker cp <container_name>:/home/tk/uboot/idbloader.img . 
+docker cp <container_name>:/home/tk/kernel/boot.img .
 ```
 
 # writing it to sd card / emmc
 
-1. Extract `boot.img` out from docker into host machine, and copy it to Target Computer.
-    ```shell
-    docker cp container-id:/path/boot.img ~/Desktop/boot.img
-    scp ~/Desktop/boot.img linaro@192.168.1.1:~/Downloads  # copy over to Target Computer
-       
-    # if your installation is on SD Card, we'll need to write this `boot.img` into `mmcblk1p4`:
-    sudo dd if=boot.img of=/dev/mmcblk1p4 status=progress && sync 
-   
-    # if your installation is on Emmc, we'll need to write this `boot.img` into `mmcblk0p4`:
-    sudo dd if=boot.img of=/dev/mmcblk0p4 status=progress && sync 
-    ```
-2. Restart your Target Computer with `sudo reboot`. It'll be able to launch with a patched kernel.
+we'll to write this to /dev/sdX where X is the sd card identifier `blkid` or `lsblk`
 
-3. Additional steps to show what to do next with `apparmor` as the example:
-   ```shell
-    # This step is for enabling of `apparmor` and other boot params.
-    sudo vim /boot/cmdline.txt
-    apparmor=1 security=apparmor    
-    systemd.unified_cgroup_hierarchy=1  # 1 = cgroupV2 , 0 = cgroupV1    
-    # check if i'm using cgroup v2 => stat -fc %T /sys/fs/cgroup/ OR cat /sys/fs/cgroup/cgroup.controllers
-   ```
+ ```shell
+ # if your installation is on SD Card:
+sudo dd if=idbloader.img of=/dev/sdX seek=64 conv=fsync status=progress && sync  # no partition for idbloader. just skip first 64 bytes
+sudo dd if=uboot.img of=/dev/sdX1 conv=fsync status=progress && sync
+sudo dd if=trust.img of=/dev/sdX2 conv=fsync status=progress && sync
+# /dev/sdX3 is misc
+sudo dd if=boot.img of=/dev/sdX4 conv=fsync status=progress && sync
 
+ # if your installation is on emmc, we'll write this into `mmcblk0pX`:
+sudo dd if=idbloader.img of=mmcblk0 seek=64 conv=fsync status=progress && sync  # no partition for idbloader. just skip first 64 bytes
+sudo dd if=uboot.img of=mmcblk0p1 conv=fsync status=progress && sync
+sudo dd if=trust.img of=mmcblk0p2 conv=fsync status=progress && sync
+# mmcblk0p3 is misc 
+sudo dd if=boot.img of=mmcblk0p4 conv=fsync status=progress && sync
+ ```
 
 ## References:
 1. [rock-chip bootflow](http://opensource.rock-chips.com/wiki_Boot_option)
