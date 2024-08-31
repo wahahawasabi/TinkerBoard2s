@@ -7,7 +7,7 @@ Currently, this has been tested successfully on:
 - Tinker Board 2s
 
 The guide is broken down into 2 sections with detailed explanation along the way:
-- [Boot](boot/readme.md)
+- [Boot](boot/bootImages.md)
   - uboot
   - kernel
 - Linux OS (format will be similar to load other Linux variations)
