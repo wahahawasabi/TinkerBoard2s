@@ -5,7 +5,7 @@ After the init command has progressed through the appropriate rc directory for t
 Systemd is a widely used Linux software suite that also provides an init (also known as “initialization“), the first process that loads when you boot your Linux system.
 
 
-
+they needto vim into run-inside-chroot.sh to make changes to the variables. 
 
 ```shell
 stat /sbin/init
