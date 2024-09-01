@@ -84,10 +84,25 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- rk3399-tinker_board_2.img -j24
 # This happens because sometimes, there are some defconfig that was not included but the kernel requires it. So it'll prompt you for it.
 
 make modules_install INSTALL_MOD_PATH=/home/tk/kernel/MODULES/  # modules will contain drivers like wifi, bluetooth, etc. 
-tar czf name_of_archive_file.tar.gz name_of_directory_to_tar
+tar czf kernelMods.tar.gz /home/tk/kernel/MODULES/
 ```
 
 If  no errors, `boot.img`, `kernel.img`, `one-other-image.img` will be created in the directory.
+
+# Extracting `userdata` contents from github source page
+the `userdata`  content is found [here](https://github.com/TinkerBoard-Linux/rockchip-linux-device-rockchip/tree/linux5.10-rk3399-debian11/common/images/userdata/normal). 
+As part of the `Dockerfile`, it has already been cloned into `rockchipDevice` folder. So all we need to do is to pull it out and put it into an image called `userdata.img` 
+```shell
+cd /home/tk/rockchipDevice
+dd if=/dev/zero of=userdata.img bs=1M count=64                                      # 1. Generate an Empty 64mb Image File
+mkfs.ext2 userdata.img                                                              # 2. Format the Image File as ext4
+mkdir /mnt/userdata
+mount userdata.img /mnt/userdata                                                    # 3. Mount the Image File
+cp -rfp /home/tk/rockchipDevice/common/images/userdata/normal/* /mnt/userdata/      # 4. Copy the Root Filesystem into the Image
+umount /mnt/userdata                                                                # 5. Unmount the Image File
+fsck.ext2 -f userdata.img                                                           # 6. Check the Image for Errors
+resize2fs -M userdata.img                                                           # 7. Resize the Image File to the Smallest Size
+```
 
 # Extracting it out from docker container to host computer
 Within your host pc directory, you can run the below code to extract the required images:
@@ -96,7 +111,10 @@ docker cp <container_name>:/home/tk/uboot/idbloader.img .
 docker cp <container_name>:/home/tk/uboot/uboot.img . 
 docker cp <container_name>:/home/tk/uboot/trust.img . 
 docker cp <container_name>:/home/tk/kernel/boot.img .
+docker cp <container_name>:/home/tk/kernel/kernelMods.tar.gz .
+docker cp <container_name>:/home/tk/rockchipDevice/userdata.img .
 ```
+Note: `kernelMods.tar.gz` will be loaded separately into the linux OS.  
 
 # writing it to sd card / emmc
 
@@ -109,6 +127,7 @@ sudo dd if=uboot.img of=/dev/sdX1 conv=fsync status=progress && sync
 sudo dd if=trust.img of=/dev/sdX2 conv=fsync status=progress && sync
 # /dev/sdX3 is misc
 sudo dd if=boot.img of=/dev/sdX4 conv=fsync status=progress && sync
+sudo dd if=userdata.img of=/dev/sdX5 conv=fsync status=progress && sync
 
  # if your installation is on emmc, we'll write this into `mmcblk0pX`:
 sudo dd if=idbloader.img of=mmcblk0 seek=64 conv=fsync status=progress && sync  # no partition for idbloader. just skip first 64 bytes
@@ -116,6 +135,7 @@ sudo dd if=uboot.img of=mmcblk0p1 conv=fsync status=progress && sync
 sudo dd if=trust.img of=mmcblk0p2 conv=fsync status=progress && sync
 # mmcblk0p3 is misc 
 sudo dd if=boot.img of=mmcblk0p4 conv=fsync status=progress && sync
+sudo dd if=userdata.img of=mmcblk0p5 conv=fsync status=progress && sync
  ```
 
 ## References:

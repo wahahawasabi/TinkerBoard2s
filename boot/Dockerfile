@@ -26,7 +26,8 @@ RUN apt-get update && apt-get upgrade -y && \
     # clone all the required libraries from TinkerBoard-5.10 github
     git clone $kernel510/rockchip-linux-kernel.git /home/tk/kernel --progress  && \
     git clone $kernel510/rockchip-linux-u-boot /home/tk/uboot --progress  && \
-    git clone $kernel510/rockchip-linux-rkbin /home/tk/rkbin --progress
+    git clone $kernel510/rockchip-linux-rkbin /home/tk/rkbin --progress && \
+    git clone $kernel510/rockchip-linux-device-rockchip /home/tk/rockchipDevice --progress
 
 # adding gcc to path
 ENV PATH="${PATH}:/home/tk/gcc-linaro-$gccTarFile-x86_64_aarch64-linux-gnu/bin"
