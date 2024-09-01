@@ -32,7 +32,6 @@ sudo mkfs.ext2 /dev/sdb5
 sudo mkfs.ext4 /dev/sdb6
 
 sudo parted /dev/sdb print
-lsblk -f
 ````
 
 ## References:
