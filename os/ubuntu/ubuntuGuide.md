@@ -18,11 +18,15 @@ vim run-inside-chroot.sh
 This is how we will generate the `sbin/init`, `fstab`, `networking` and other installation requirements. 
 
 # kernelMods
+Finally, we just need to untar `kernelMods.tar.gz` that we have extracted from `kernel boot` previously into  `lib/modules/<kernel-version-number>`.
 
-Finally, we just need to untar `kernelMods.tar.gz` that we have extracted from `kernel boot` previously into  `lib/modules/`.
+# Final 2 steps
+Once done, `cd..` and `run-outside-chroot.sh` to generate the rootfs.img. Copy it out of the docker container with `docker cp` and we can `dd` it into the sd card. 
 
-# Additional steps 
+Then we just need to boot it up, and log in. Then run `finalsteps.sh` to set up networking connectivity. Boomz, donezo. 
 
+
+# optional steps (how to work with /boot/cmdline.txt)
 to show what to do next with `apparmor` as the example:
 ```shell
  # This step is for enabling of `apparmor` and other boot params.

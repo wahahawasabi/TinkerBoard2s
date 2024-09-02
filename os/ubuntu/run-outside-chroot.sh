@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Done outside of chroot
+# Done outside of chroot - package of the rootfs OS
 dd if=/dev/zero of=rootfs.img bs=1M count=2048  # 1. Generate an Empty 2GB Image File
 mkfs.ext4 rootfs.img                            # 2. Format the Image File as ext4
 mkdir /mnt/rootfs

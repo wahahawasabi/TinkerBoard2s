@@ -7,47 +7,55 @@ ROOTPASS=@1234
 HOSTNAME=tk0
 
 
-install_init () {
-  # responsible for initiating linux os. do not change this.
-  apt-get install systemd -y
-  ln -sf /lib/systemd/systemd /sbin/init
-  # Check if the output of `ls -l /sbin/init` contains the specified string
-  if ls -l /sbin/init | grep -q "/sbin/init -> /lib/systemd/systemd"; then
-      return 0  # Return true (success)
-  else
-      return 1  # Return false (failure)
-  fi
-}
+# initial
 
+mknod /dev/null c 1 3
+chmod 666 /dev/null  # creating /devl/null so that chroot can perform `apt-get update`
+echo "nameserver 1.1.1.1" >> etc/resolv.conf  # for initial. will be replaced later.
+apt-get update
 
-install_networking () {
-  cat <<EOF >> /etc/network/interfaces
-# This file is the main network interfaces file
-# Loopback network interface
-auto lo
-iface lo inet loopback
+# core libraries installation
+apt-get install -y systemd sudo vim curl ethtool dnsutils udev iputils-ping apt-utils wpasupplicant kmod pciutils tar
+ln -sf /lib/systemd/systemd /sbin/init  # link to sbin/init for compatibility
 
-# Include additional interface configurations
-source /etc/network/interfaces.d/*
+# user details set up
+echo "root:$ROOTPASS" | chpasswd  # Set the root password
+useradd -m "$USERNAME"  # Add a new user with a home directory
+echo "$USERNAME:$PASSWORD" | chpasswd  # Set the password for the new user
+adduser "$USERNAME" sudo   # Add the user to the sudo group
+usermod --shell /bin/bash "$USERNAME" # Set bash as the default shell for the user
+
+# network management
+networkctl end0 up  # bring up local ethernet
+networkctl wlp1s0 up  # bring up wifi (might need to do this later onboard itself after doing modprobe)
+
+# creating network configs - inline with systemd-networkd
+cat <<EOF >> /etc/systemd/network/20-wlan.network
+[Match]
+Name=wlp1s0
+
+[Network]
+DHCP=yes
 EOF
 
-  # additional network interfaces configs - eth0, wlan0
-  mkdir -p /etc/network/interfaces.d
-  cat <<EOF >> /etc/network/interfaces.d/eth0.cfg
-# Add the following (for ethernet):
-auto lo eth0
-allow-hotplug eth0
-iface lo inet loopback
-iface eth0 inet dhcp
+cat <<EOF >> /etc/systemd/network/00-local.network
+[Match]
+Name=lo
+
+[Network]
+Address=127.0.0.1/8
 EOF
 
-  echo "networking interfaces written to file."
-}
+cat <<EOF >> /etc/systemd/network/10-end.network
+[Match]
+Name=end* eth* enp*
 
+[Network]
+DHCP=yes
+EOF
 
-update_fstab () {
-  # these are the recommended default settings
-  cat <<EOF >> /etc/fstab
+# Set up fstab
+cat <<EOF >> /etc/fstab
 # <file system>                 <mount pt>              <type>          <options>                          <dump>  <pass>
 PARTLABEL=userdata              /boot                   ext2            defaults                            0       1
 PARTLABEL=rootfs                /                       ext4            defaults                            0       2
@@ -58,29 +66,12 @@ proc                            /proc                   proc            defaults
 devtmpfs                        /dev                    devtmpfs        defaults                            0       0
 EOF
 
-  echo "fstab updated"
-}
+# set up hostname
+hostname "$HOSTNAME"  # Temporarily change the hostname
+echo "$HOSTNAME" > /etc/hostname  # Permanently set the hostname
 
-
-update_user_permissions () {
-  # Ensure required variables are set
-  if [[ -z "$ROOTPASS" || -z "$USERNAME" || -z "$PASSWORD" || -z "$HOSTNAME" ]]; then
-    echo "Error: Required variables ROOTPASS, USERNAME, PASSWORD, or HOSTNAME are not set."
-    return 1  # Return false (failure)
-  fi
-
-  echo "root:$ROOTPASS" | chpasswd  # Set the root password
-  useradd -m "$USERNAME"  # Add a new user with a home directory
-  echo "$USERNAME:$PASSWORD" | chpasswd  # Set the password for the new user
-  adduser "$USERNAME" sudo   # Add the user to the sudo group
-  usermod --shell /bin/bash "$USERNAME" # Set bash as the default shell for the user
-
-  hostname "$HOSTNAME"  # Temporarily change the hostname
-  echo "$HOSTNAME" > /etc/hostname  # Permanently set the hostname
-
-  # Append to /etc/hosts only if not already present
-  if ! grep -q "127.0.0.1       $HOSTNAME" /etc/hosts; then
-    cat <<EOF >> /etc/hosts
+# Append to /etc/hosts only if not already present
+cat <<EOF >> /etc/hosts
 127.0.0.1       localhost
 127.0.0.1       $HOSTNAME
 ::1             localhost ip6-localhost ip6-loopback
@@ -89,28 +80,26 @@ ff00::0         ip6-mcastprefix
 ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
-  fi
-}
+
+# cLean up
+rm /usr/bin/qemu-aarch64-static
+
+############## IMPORTANT ##############
+# remember to copy the kernelMods.tar.gz into /lib/modules/kernel-version-number. you will need to make modules folder
+#######################################
+
+# boot up the board, login, and fun finalsteps.sh
+cat <<EOF >> /finalsteps.sh
+sudo modprobe 8822ce  # for activating wifi driver LATER
+systemctl enable systemd-networkd.service
+systemctl start systemd-networkd.service
+systemctl enable systemd-resolved.service
+systemctl start systemd-resolved.service
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+networkctl status end0  # verify all ok
+networkctl status wlp1s0  # verify all ok
+EOF
+chmod +x finalsteps.sh
 
 
-cleanup () {
-  rm /usr/bin/qemu-aarch64-static
-  # modprobe wifi & bluetooth driver
-
-  echo "all done. leaving chroot."
-  exit # leave chroot
-}
-
-
-# Run functions in sequence and check their success
-if install_init && \
-   install_networking && \
-   update_fstab && \
-   update_user_permissions; then
-
-    echo "All functions completed successfully"
-    cleanup  # Call cleanup only if all functions succeed
-else
-    echo "One or more functions failed"
-    exit 1  # Exit with failure status
-fi
+#reference: https://tinker-board.asus.com/forum/index.php?/topic/15463-wlp1s0-not-found/
